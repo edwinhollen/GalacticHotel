@@ -12,20 +12,29 @@ function ImageSystem()
       end
       return self.loadedImages[imageName]
     end,
-    update = function(self, entities, dt)
-      for entityKey, entity in ipairs(entities) do
-        local pos = entity:getComponent("PositionComponent")
-        pos.x = pos.x + (50 * dt)
-        pos.y = pos.x + (80 * dt)
-      end
-    end,
     draw = function(self, entities)
       for entityKey, entity in ipairs(entities) do
         local img = entity:getComponent("ImageComponent")
         local pos = entity:getComponent("PositionComponent")
-        -- TODO
-        -- round the positions when drawing
         love.graphics.draw(self:getImage(img.imageName), math.round(pos.x), math.round(pos.y))
+      end
+    end
+  }
+end
+
+function SnappingSystem(snapSize)
+  return {
+    accepts = {"PositionComponent", "SnappingComponent"},
+    update = function(self, entities, dt)
+      for entityKey, entity in ipairs(entities) do
+        local snap = entity:getComponent("SnappingComponent")
+        local pos = entity:getComponent("PositionComponent")
+        if pos.x % snap.snap ~= 0 then
+          pos.x = math.roundToNearest(pos.x, snap.snap)
+        end
+        if pos.y % snap.snap ~= 0 then
+          pos.y = math.roundToNearest(pos.y, snap.snap)
+        end
       end
     end
   }

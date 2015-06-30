@@ -1,6 +1,6 @@
-function Entity(newComponents)
+function Entity(...)
   return {
-    components = newComponents or {},
+    components = {...} or {},
     hasComponentOfType = function(self, type)
       if self:getComponent(type) then
         return true
