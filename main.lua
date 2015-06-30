@@ -1,7 +1,11 @@
-require "entitysystem"
-require "system"
-require "entity"
-require "component"
+require "EntitySystem"
+require "Entity"
+require "systems/ImageSystem"
+require "systems/NodeSystem"
+require "components/ImageComponent"
+require "components/NodeComponent"
+require "components/PathfindingComponent"
+require "components/PositionComponent"
 
 local showFps = true
 
@@ -15,14 +19,8 @@ function love.load()
 
   -- add systems
   entitySystem:addSystem(ImageSystem())
-  entitySystem:addSystem(SnappingSystem())
   entitySystem:addSystem(NodeSystem())
-  
-  -- add entities
-  entitySystem:addEntity(Entity(
-    PositionComponent(20, 20),
-    ImageComponent("images/test.png")
-  ))
+
   -- add tiles
   local tileSize = 32
   for row=0, 20 do
@@ -37,13 +35,19 @@ function love.load()
       
       entitySystem:addEntity(Entity(
         PositionComponent(col * tileSize, row * tileSize),
-        SnappingComponent(tileSize),
         ImageComponent(image),
         NodeComponent(walkable, tileSize/2, tileSize/2)
       ))
     end
   end
   
+  -- add npc
+  entitySystem:addEntity(Entity(
+    PositionComponent(love.math.random(0, 400), love.math.random(0, 400)),
+    ImageComponent("images/npc.png"),
+    NodeComponent(false, 24/2, 48),
+    PathfindingComponent({x=love.math.random(0, 400), y=love.math.random(0, 400)})
+  ))
 end
 
 function love.update(dt)
