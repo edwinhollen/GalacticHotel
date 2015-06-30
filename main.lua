@@ -16,6 +16,7 @@ function love.load()
   -- add systems
   entitySystem:addSystem(ImageSystem())
   entitySystem:addSystem(SnappingSystem())
+  entitySystem:addSystem(NodeSystem())
   
   -- add entities
   entitySystem:addEntity(Entity(
@@ -26,10 +27,19 @@ function love.load()
   local tileSize = 32
   for row=0, 20 do
     for col=0, 20 do
+      local e = Entity()
+      local image = "images/floortile.png"
+      local walkable = true
+      if love.math.random(0, 10) < 2 then
+        image = "images/wall.png"
+        walkable = false
+      end
+      
       entitySystem:addEntity(Entity(
         PositionComponent(col * tileSize, row * tileSize),
         SnappingComponent(tileSize),
-        ImageComponent("images/floortile.png")
+        ImageComponent(image),
+        NodeComponent(walkable, tileSize/2, tileSize/2)
       ))
     end
   end

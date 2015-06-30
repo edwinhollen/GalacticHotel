@@ -1,6 +1,9 @@
 function Entity(...)
   return {
     components = {...} or {},
+    addComponent = function(self, newComponent)
+      table.insert(self.components, newComponent)
+    end,
     hasComponentOfType = function(self, type)
       if self:getComponent(type) then
         return true
