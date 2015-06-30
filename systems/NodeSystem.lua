@@ -53,9 +53,7 @@ function NodeSystem()
           if not pfc.nextHop then
             pfc.destination = self:findNearestNode(pfc.destination)
             pfc.nextHop = self:findNearestNode(adjustedPos)
-          end
-          if adjustedPos.x ~= pfc.nextHop.x and adjustedPos.y ~= pfc.nextHop.y then
-            
+            pfc.visited = {}
           end
         end
       end
@@ -91,6 +89,7 @@ function NodeSystem()
         love.graphics.setColor(200, 0, 200)
         love.graphics.rectangle("fill", neighbor.x-3, neighbor.y-3, 6, 6)
       end
+      
     end
   }
 end
