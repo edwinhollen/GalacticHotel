@@ -2,6 +2,7 @@ function NodeSystem()
   require "util"
   return {
     accepts = {"NodeComponent", "PositionComponent"},
+    testPoint = {x=0,y=0},
     nodeGraph = nil,
     drawNodes = true,
     findNearestNode = function(self, point)
@@ -16,6 +17,20 @@ function NodeSystem()
         end
       end
       return nearest
+    end,
+    findNeighborsOfNode = function(self, targetNode, maxNeighbors)
+      local neighbors = {}
+      
+      while #neighbors < maxNeighbors do
+        local nearest
+        for nodeKey, node in ipairs(self.nodeGraph) do
+          if nearest == nil or node ~= targetNode and node.isWalkable and not table.contains(neighbors, node) and math.distance(targetNode.x, targetNode.y, node.x, node.y) < math.distance(targetNode.x, targetNode.y, nearest.x, nearest.y) then
+            nearest = node
+          end
+        end
+        table.insert(neighbors, nearest)
+      end
+      return neighbors
     end,
     update = function(self, entities, dt)
       self.nodeGraph = {}
@@ -33,11 +48,18 @@ function NodeSystem()
         local nc = entity:getComponent("NodeComponent")
         local pos = entity:getComponent("PositionComponent")
         local pfc = entity:getComponent("PathfindingComponent")
+        local adjustedPos = {x=pos.x+nc.offsetX, y=pos.y+nc.offsetY}
         if pfc then
-          
+          if not pfc.nextHop then
+            pfc.destination = self:findNearestNode(pfc.destination)
+            pfc.nextHop = self:findNearestNode(adjustedPos)
+          end
+          if adjustedPos.x ~= pfc.nextHop.x and adjustedPos.y ~= pfc.nextHop.y then
+            
+          end
         end
       end
-      
+      self.testPoint = {x=love.mouse.getX(), y=love.mouse.getY()}
     end,
     draw = function(self, entities)
       for nodeKey, node in ipairs(self.nodeGraph) do
@@ -60,6 +82,14 @@ function NodeSystem()
           love.graphics.setColor(255, 255, 0)
           love.graphics.line(pos.x + nc.offsetX, pos.y + nc.offsetY, nearest.x, nearest.y)
         end
+      end
+      
+      local testNearest = self:findNearestNode(self.testPoint)
+      love.graphics.setColor(255, 0, 255)
+      love.graphics.rectangle("fill", testNearest.x-8, testNearest.y-8, 16, 16)
+      for neighborKey, neighbor in ipairs(self:findNeighborsOfNode(testNearest, 4)) do
+        love.graphics.setColor(200, 0, 200)
+        love.graphics.rectangle("fill", neighbor.x-3, neighbor.y-3, 6, 6)
       end
     end
   }
