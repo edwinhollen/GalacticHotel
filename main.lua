@@ -45,7 +45,7 @@ function love.load()
   entitySystem:addEntity(Entity(
     PositionComponent(love.math.random(0, 400), love.math.random(0, 400)),
     ImageComponent("images/npc.png"),
-    NodeComponent(false, 24/2, 48),
+    NodeComponent(false, 14/2, 28),
     PathfindingComponent({x=love.math.random(0, 400), y=love.math.random(0, 400)})
   ))
 end
