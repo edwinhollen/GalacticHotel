@@ -55,6 +55,29 @@ function NodeSystem()
             pfc.nextHop = self:findNearestNode(adjustedPos)
             pfc.visited = {}
           end
+          local speed = 50 * dt
+          local dir = math.atan2(pfc.nextHop.y - adjustedPos.y, pfc.nextHop.x - adjustedPos.x) * 180 / math.pi
+          pos.x = pos.x + (math.cos(dir * math.pi / 180) * speed)
+          pos.y = pos.y + (math.sin(dir * math.pi / 180) * speed)
+          if math.round(adjustedPos.x) == pfc.nextHop.x and math.round(adjustedPos.y) == pfc.nextHop.y then
+            -- set hop as visited
+            table.insert(pfc.visited, pfc.nextHop)
+            -- set the next hop
+            local neighbors = self:findNeighborsOfNode(pfc.nextHop, 4)
+            local uniqueNeighbors = {}
+            for neighborKey, neighbor in ipairs(neighbors) do
+              if not table.contains(pfc.visited, neighbor) then
+                table.insert(uniqueNeighbors, neighbor)
+              end
+            end
+            local closestUniqueNeighbor = uniqueNeighbors[1]
+            for uniqueNeighborKey, uniqueNeighbor in ipairs(uniqueNeighbors) do
+              if math.distance(uniqueNeighbor.x, uniqueNeighbor.y, pfc.destination.x, pfc.destination.y) < math.distance(closestUniqueNeighbor.x, closestUniqueNeighbor.y, pfc.destination.x, pfc.destination.y) then
+                closestUniqueNeighbor = uniqueNeighbor
+              end
+            end
+            pfc.nextHop = closestUniqueNeighbor
+          end
         end
       end
       self.testPoint = {x=love.mouse.getX(), y=love.mouse.getY()}
