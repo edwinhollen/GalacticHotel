@@ -14,7 +14,7 @@ function ImageSystem()
       for entityKey, entity in ipairs(entities) do
         local img = entity:getComponent("ImageComponent")
         local pos = entity:getComponent("PositionComponent")
-        love.graphics.draw(self:getImage(img.imageName), math.round(pos.x), math.round(pos.y))
+        love.graphics.draw(self:getImage(img.imageName), math.round(pos.x - img.offset.x), math.round(pos.y - img.offset.y))
       end
     end
   }

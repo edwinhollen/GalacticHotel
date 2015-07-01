@@ -6,6 +6,7 @@ require "components/ImageComponent"
 require "components/NodeComponent"
 require "components/PathfindingComponent"
 require "components/PositionComponent"
+require "Point"
 
 local showFps = true
 
@@ -34,19 +35,19 @@ function love.load()
       end
       
       entitySystem:addEntity(Entity(
-        PositionComponent(col * tileSize, row * tileSize),
-        ImageComponent(image),
-        NodeComponent(walkable, tileSize/2, tileSize/2)
+        PositionComponent(Point(col * tileSize, row * tileSize)),
+        ImageComponent(image, Point(16, 16)),
+        NodeComponent(walkable)
       ))
     end
   end
   
   -- add npc
   entitySystem:addEntity(Entity(
-    PositionComponent(love.math.random(0, 400), love.math.random(0, 400)),
-    ImageComponent("images/npc.png"),
-    NodeComponent(false, 14/2, 28),
-    PathfindingComponent({x=love.math.random(0, 400), y=love.math.random(0, 400)})
+    PositionComponent(Point(love.math.random(0, 400), love.math.random(0, 400))),
+    ImageComponent("images/npc.png", Point(7, 28)),
+    NodeComponent(false),
+    PathfindingComponent(Point(love.math.random(0, 400), love.math.random(0, 400)))
   ))
 end
 
