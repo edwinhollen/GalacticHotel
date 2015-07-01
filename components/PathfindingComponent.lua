@@ -3,7 +3,10 @@ function PathfindingComponent(newDestination)
   return {
     type = "PathfindingComponent",
     nextHop = nil,
-    visited = nil,
-    destination = newDestination or nil
+    destination = newDestination or nil,
+    setDestination = function(self, newDestination)
+      self.nextHop = nil
+      self.destination = newDestination
+    end
   }
 end

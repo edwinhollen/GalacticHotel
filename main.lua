@@ -11,10 +11,14 @@ require "Point"
 local showFps = true
 
 local entitySystem
+local testNpc
 
 function love.load()
   if arg[#arg] == "-debug" then require("mobdebug").start() end
-  
+    
+    
+  print("testing")
+
   -- init
   entitySystem = EntitySystem()
 
@@ -43,12 +47,14 @@ function love.load()
   end
   
   -- add npc
-  entitySystem:addEntity(Entity(
+  
+  testNpc = Entity(
     PositionComponent(Point(love.math.random(0, 400), love.math.random(0, 400))),
     ImageComponent("images/npc.png", Point(7, 28)),
     NodeComponent(false),
     PathfindingComponent(Point(love.math.random(0, 400), love.math.random(0, 400)))
-  ))
+  )
+  entitySystem:addEntity(testNpc)
 end
 
 function love.update(dt)
@@ -58,6 +64,7 @@ function love.update(dt)
       pair.system:update(pair.entities, dt)
     end
   end
+  testNpc:getComponent("PathfindingComponent"):setDestination(love.mouse.getX(), love.mouse.getY())
 end
 
 function love.draw()
