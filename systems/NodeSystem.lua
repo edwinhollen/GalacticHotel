@@ -13,17 +13,28 @@ function NodeSystem()
       end
       return nearest
     end,
-    findNeighborsOfNode = function(self, nodes, targetNode, maxNeighbors)
+    findNeighborsOfNode = function(self, nodes, targetNode, maxNeighbors, maxDistance)
       maxNeighbors = maxNeighbors or 4
       local neighbors = {}
       while #neighbors < maxNeighbors do
         local nearest
         for nodeKey, node in ipairs(nodes) do
-          if (node.walkable and node ~= targetNode) and (nearest == nil or (not table.contains(neighbors, node) and math.distance(node.x, node.y, targetNode.x, targetNode.y) < math.distance(nearest.x, nearest.y, targetNode.x, targetNode.y))) then
+          if (node.walkable and node ~= targetNode) and (nearest == nil or (not table.contains(neighbors, node) and ((node.x == targetNode.x and node.y ~= targetNode.y) or (node.x ~= targetNode.x and node.y == targetNode.y)) and math.distance(node.x, node.y, targetNode.x, targetNode.y) < math.distance(nearest.x, nearest.y, targetNode.x, targetNode.y))) then
             nearest = node
           end
         end
         table.insert(neighbors, nearest)
+      end
+      
+      -- check for max distance
+      if maxDistance then
+        local neighborsWithinMaxDistance = {}
+        for neighborKey, neighbor in ipairs(neighbors) do
+          if math.distance(neighbor.x, neighbor.y, targetNode.x, targetNode.y) <= maxDistance then
+            table.insert(neighborsWithinMaxDistance, neighbor)
+          end
+        end
+        neighbors = neighborsWithinMaxDistance
       end
       
       return neighbors
@@ -53,7 +64,7 @@ function NodeSystem()
         currentLabel = currentLabel + 1
         for labeledNode, label in pairs(labeledNodes) do
           if label == (currentLabel - 1) then
-            for neighborKey, neighbor in ipairs(self:findNeighborsOfNode(nodes, labeledNode, 4)) do
+            for neighborKey, neighbor in ipairs(self:findNeighborsOfNode(nodes, labeledNode, 4, 32)) do
               labeledNodes[neighbor] = labeledNodes[neighbor] or currentLabel
               if neighbor == destinationNode then
                 foundDestinationNode = true
@@ -62,14 +73,49 @@ function NodeSystem()
           end
         end
       end
-      return labeledNodes
+      local route = {}
+      route[currentLabel] = destinationNode
+      
+      local foundOriginNode = false
+      while currentLabel > 0 do
+        currentLabel = currentLabel - 1
+        
+        local nodesWithCurrentLabel = {}
+        for labeledNode, label in pairs(labeledNodes) do
+          if label == currentLabel then
+            table.insert(nodesWithCurrentLabel, labeledNode)
+          end
+        end
+        local neighborsOfCurrentRouteNode = self:findNeighborsOfNode(nodes, route[currentLabel + 1], 4, 32)
+        -- find common nodes
+        local commonNodes = {}
+        for neighborKey, neighborNode in ipairs(neighborsOfCurrentRouteNode) do
+          local match = false
+          for nodeWithCurrentLabelKey, nodeWithCurrentLabel in ipairs(nodesWithCurrentLabel) do
+            if neighborNode == nodeWithCurrentLabel then
+              match = true
+            end
+          end
+          if match == true then
+            table.insert(commonNodes, neighborNode)
+          end
+        end
+        -- pick common node for next route node
+        route[currentLabel] = commonNodes[1]
+      end
+      
+      return route
     end,
     update = function(self, entities, dt)
       local nodes = self:generateNodesFromEntities(entities)
       for entityKey, entity in ipairs(entities) do
         local pfc = entity:getComponent("PathfindingComponent")
+        local pos = entity:getComponent("PositionComponent")
         if pfc then
-          
+          if pfc.destination ~= nil and pfc.route == nil then
+            -- requesting new route
+            pfc.route = self:findRoute(nodes, self:findNearestNode(nodes, Point(pos.x, pos.y)), self:findNearestNode(nodes, pfc.destination))
+          end
         end
       end
     end,
@@ -83,15 +129,14 @@ function NodeSystem()
         end
         love.graphics.circle("fill", node.x, node.y, 4, 4)
       end
-      
-      local origin = self:findNearestNode(nodes, Point(32, 32))
-      local destination = self:findNearestNode(nodes, Point(512, 512))
-      local route = self:findRoute(nodes, origin, destination)
-    
-      for node, label in pairs(route) do
-        love.graphics.print(label, node.x, node.y)
+      for entityKey, entity in ipairs(entities) do
+        local pfc = entity:getComponent("PathfindingComponent")
+        if pfc and pfc.route then
+          for key, node in ipairs(pfc.route) do
+            love.graphics.print(key, node.x, node.y)
+          end
+        end
       end
-      
     end
   }
 end

@@ -52,7 +52,7 @@ function love.load()
     PositionComponent(Point(love.math.random(0, 400), love.math.random(0, 400))),
     ImageComponent("images/npc.png", Point(7, 28)),
     NodeComponent(false),
-    PathfindingComponent(Point(love.math.random(0, 400), love.math.random(0, 400)))
+    PathfindingComponent()
   )
   entitySystem:addEntity(testNpc)
 end
@@ -64,7 +64,9 @@ function love.update(dt)
       pair.system:update(pair.entities, dt)
     end
   end
-  testNpc:getComponent("PathfindingComponent"):setDestination(love.mouse.getX(), love.mouse.getY())
+  if love.mouse.isDown("l") then
+    testNpc:getComponent("PathfindingComponent"):setDestination(Point(love.mouse.getX(), love.mouse.getY()))
+  end
 end
 
 function love.draw()
