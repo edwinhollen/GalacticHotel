@@ -128,6 +128,20 @@ function NodeSystem()
               pfc.route = nil
             end
           end
+          if pfc.destination and pfc.route then
+            if math.round(pos.x) == pfc.route[1].x and math.round(pos.y) == pfc.route[1].y then
+              table.remove(pfc.route, 1)
+              if #pfc.route < 1 then
+                pfc.route = nil
+                pfc.destination = nil
+              end
+            else
+              local direction = math.atan2(pfc.route[1].y - pos.y, pfc.route[1].x - pos.x)
+              local speed = 50 * dt
+              pos.x = pos.x + speed * math.cos(direction)
+              pos.y = pos.y + speed * math.sin(direction)
+            end
+          end
         end
       end
     end,
