@@ -1,6 +1,7 @@
 function NodeSystem()
   require "util"
   require "Node"
+  require "Point"
   return {
     accepts = {"NodeComponent", "PositionComponent"},
     drawNodes = true,
@@ -27,7 +28,7 @@ function NodeSystem()
       end
       
       -- check for max distance
-      if maxDistance then
+      if maxDistance ~= nil then
         local neighborsWithinMaxDistance = {}
         for neighborKey, neighbor in ipairs(neighbors) do
           if math.distance(neighbor.x, neighbor.y, targetNode.x, targetNode.y) <= maxDistance then
@@ -52,31 +53,37 @@ function NodeSystem()
       return nodes
     end,
     findRoute = function(self, nodes, originNode, destinationNode)
-      -- returns nil if no route possible
-      if not (originNode.walkable and destinationNode.walkable) then return nil end
       -- label nodes
       local labeledNodes = {}
       local currentLabel = 1
       labeledNodes[originNode] = currentLabel
       
       local foundDestinationNode = false
-      while not (foundDestinationNode or #labeledNodes >= #nodes) do
+      while (not foundDestinationNode) do
         currentLabel = currentLabel + 1
+        if currentLabel > #nodes then
+          return nil
+        end
         for labeledNode, label in pairs(labeledNodes) do
           if label == (currentLabel - 1) then
-            for neighborKey, neighbor in ipairs(self:findNeighborsOfNode(nodes, labeledNode, 4, 32)) do
+            
+            local neighbors = self:findNeighborsOfNode(nodes, labeledNode, 4, 32)
+            
+            for neighborKey, neighbor in ipairs(neighbors) do
               labeledNodes[neighbor] = labeledNodes[neighbor] or currentLabel
               if neighbor == destinationNode then
                 foundDestinationNode = true
+                break
               end
             end
           end
         end
       end
+      
       local route = {}
       route[currentLabel] = destinationNode
       
-      local foundOriginNode = false
+      
       while currentLabel > 0 do
         currentLabel = currentLabel - 1
         
@@ -100,7 +107,6 @@ function NodeSystem()
             table.insert(commonNodes, neighborNode)
           end
         end
-        -- pick common node for next route node
         route[currentLabel] = commonNodes[1]
       end
       
@@ -111,10 +117,16 @@ function NodeSystem()
       for entityKey, entity in ipairs(entities) do
         local pfc = entity:getComponent("PathfindingComponent")
         local pos = entity:getComponent("PositionComponent")
+        
         if pfc then
-          if pfc.destination ~= nil and pfc.route == nil then
-            -- requesting new route
-            pfc.route = self:findRoute(nodes, self:findNearestNode(nodes, Point(pos.x, pos.y)), self:findNearestNode(nodes, pfc.destination))
+          if pfc.destination and not pfc.route then
+            local origin = self:findNearestNode(nodes, Point(pos.x, pos.y))
+            pfc.destination = self:findNearestNode(nodes, pfc.destination)
+            pfc.route = self:findRoute(nodes, origin, pfc.destination)
+            if pfc.route == nil then
+              pfc.destination = nil
+              pfc.route = nil
+            end
           end
         end
       end

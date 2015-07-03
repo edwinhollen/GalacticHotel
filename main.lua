@@ -15,10 +15,7 @@ local testNpc
 
 function love.load()
   if arg[#arg] == "-debug" then require("mobdebug").start() end
-    
-    
-  print("testing")
-
+  
   -- init
   entitySystem = EntitySystem()
 
@@ -64,7 +61,10 @@ function love.update(dt)
       pair.system:update(pair.entities, dt)
     end
   end
-  if love.mouse.isDown("l") then
+end
+
+function love.mousepressed(x, y, button)
+  if button == "l" then
     testNpc:getComponent("PathfindingComponent"):setDestination(Point(love.mouse.getX(), love.mouse.getY()))
   end
 end
