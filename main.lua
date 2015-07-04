@@ -30,7 +30,7 @@ function love.load()
       local e = Entity()
       local image = "images/floortile.png"
       local walkable = true
-      if love.math.random(0, 10) < 2 then
+      if love.math.random(0, 10) < 0 then
         image = "images/wall.png"
         walkable = false
       end
