@@ -2,11 +2,13 @@ require "EntitySystem"
 require "Entity"
 require "systems/ImageSystem"
 require "systems/NodeSystem"
+require "systems/UISystem"
 require "components/ImageComponent"
 require "components/NodeComponent"
 require "components/PathfindingComponent"
 require "components/PositionComponent"
 require "Point"
+require "EntityFactory"
 
 local showFps = true
 
@@ -22,24 +24,16 @@ function love.load()
   -- add systems
   entitySystem:addSystem(ImageSystem())
   entitySystem:addSystem(NodeSystem())
+  entitySystem:addSystem(UISystem())
 
   -- add tiles
   local tileSize = 32
   for row=0, 20 do
     for col=0, 20 do
-      local e = Entity()
-      local image = "images/floortile.png"
-      local walkable = true
-      if love.math.random(0, 10) < 0 then
-        image = "images/wall.png"
-        walkable = false
-      end
-      
-      entitySystem:addEntity(Entity(
-        PositionComponent(Point(col * tileSize, row * tileSize)),
-        ImageComponent(image, Point(16, 16)),
-        NodeComponent(walkable)
-      ))
+      local entity = EntityFactory:create("floor tile")
+      entity:getComponent("PositionComponent").x = col * tileSize
+      entity:getComponent("PositionComponent").y = row * tileSize
+      entitySystem:addEntity(entity)
     end
   end
   

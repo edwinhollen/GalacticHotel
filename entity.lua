@@ -1,8 +1,10 @@
 function Entity(...)
   return {
     components = {...} or {},
-    addComponent = function(self, newComponent)
-      table.insert(self.components, newComponent)
+    addComponent = function(self, ...)
+      for k,c in ipairs({...}) do
+        table.insert(self.components, c)
+      end
     end,
     hasComponentOfType = function(self, type)
       if self:getComponent(type) then
